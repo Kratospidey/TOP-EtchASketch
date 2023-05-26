@@ -7,6 +7,11 @@ let eraseMode = false;
 let prevGridDiv = null; // Track the previously entered grid div
 let eraser = document.querySelector("#eraser");
 const slider = document.getElementById("grid-slider");
+let lightenMode = false;
+let shadingOpacityStep = 0.1;
+
+const lightenModeButton = document.querySelector("#lighten-mode");
+lightenModeButton.addEventListener("click", setLightenMode);
 
 let isMousePressed = false; // Track if the mouse button is pressed
 
@@ -24,6 +29,7 @@ function setColorMode() {
 	randomMode = false;
 	shadingMode = false;
 	eraseMode = false;
+	lightenMode = false;
 }
 
 function setRandomMode() {
@@ -31,6 +37,7 @@ function setRandomMode() {
 	randomMode = true;
 	shadingMode = false;
 	eraseMode = false;
+	lightenMode = false;
 }
 
 function setShadingMode() {
@@ -38,6 +45,7 @@ function setShadingMode() {
 	randomMode = false;
 	shadingMode = true;
 	eraseMode = false;
+	lightenMode = false;
 }
 
 function setEraseMode() {
@@ -45,6 +53,14 @@ function setEraseMode() {
 	randomMode = false;
 	shadingMode = false;
 	eraseMode = true;
+	lightenMode = false;
+}
+function setLightenMode() {
+	colorMode = false;
+	randomMode = false;
+	shadingMode = false;
+	eraseMode = false;
+	lightenMode = true;
 }
 
 function handleGridDivMouseEnter(e) {
@@ -67,13 +83,35 @@ function handleGridDivMouseEnter(e) {
 				const opacity = currentColor
 					? parseFloat(currentColor.slice(-4, -1))
 					: 0;
-				const newOpacity = Math.min(opacity + 0.1, 1);
+				const newOpacity = Math.min(opacity + shadingOpacityStep, 1);
 				e.target.style.backgroundColor = `rgba(0, 0, 0, ${newOpacity})`;
 			}
+		} else if (lightenMode) {
+			if (e.target !== prevGridDiv) {
+				const currentColor = e.target.style.backgroundColor;
+				const opacity = currentColor
+					? parseFloat(currentColor.slice(-4, -1))
+					: 0;
+				const newOpacity = Math.min(opacity - shadingOpacityStep, 1);
+				e.target.style.backgroundColor = lightenColor(currentColor, newOpacity);
+			}
 		}
+
 		prevGridDiv = e.target;
 	}
 }
+
+function lightenColor(color, opacity) {
+	const rgbaColor = color.match(/\d+/g).map(Number);
+	const lightenOpacity = 1 - opacity;
+
+	const newRed = Math.round(rgbaColor[0] * lightenOpacity);
+	const newGreen = Math.round(rgbaColor[1] * lightenOpacity);
+	const newBlue = Math.round(rgbaColor[2] * lightenOpacity);
+
+	return `rgba(${newRed}, ${newGreen}, ${newBlue}, ${opacity})`;
+}
+
 function getRandomColor() {
 	const letters = "0123456789ABCDEF";
 	let color = "#";
